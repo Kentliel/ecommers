@@ -23,7 +23,7 @@ public class Category
     private String name;
 
     @Column(nullable = false, unique = true, length = 120)
-    private String slug;
+    private String slug; // parte final de una URL que identifica de forma legible una página
 
     @Column(length = 500)
     private String description;
