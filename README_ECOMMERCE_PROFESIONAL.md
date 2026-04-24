@@ -33,7 +33,7 @@ Desarrollar un e-commerce funcional, mantenible y presentable en GitHub como pro
 
 ### Backend
 
-- Java 21
+- Java 25
 - Spring Boot 3
 - Spring MVC
 - Spring Data JPA
