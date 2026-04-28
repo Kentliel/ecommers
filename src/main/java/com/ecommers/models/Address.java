@@ -37,7 +37,6 @@ public class Address
     @Column(nullable = false)
     private Boolean defaultAddress;
 
-    @Builder.Default
     @Column(nullable = false)
     private LocalDateTime createdAt;
 

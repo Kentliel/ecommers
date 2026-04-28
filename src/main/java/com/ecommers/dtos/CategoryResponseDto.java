@@ -1,0 +1,20 @@
+package com.ecommers.dtos;
+
+import lombok.*;
+
+import java.util.UUID;
+
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+// Lo que el servidor devuelve cuando envías o pides un producto.
+public class CategoryResponseDto
+{
+    private UUID id;
+    private String name;
+    private String slug;
+    private String description;
+    private Boolean active;
+}
