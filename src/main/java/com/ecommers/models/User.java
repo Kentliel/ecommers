@@ -35,6 +35,7 @@ public class User
     @Column(nullable = false)
     private Boolean enabled;
 
+    @Builder.Default
     @Column(nullable = false)
     private LocalDateTime createdAt;
 

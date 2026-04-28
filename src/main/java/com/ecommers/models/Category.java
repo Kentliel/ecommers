@@ -31,6 +31,7 @@ public class Category
     @Column(nullable = false)
     private Boolean active;
 
+    @Builder.Default
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
