@@ -30,4 +30,41 @@ public class CategoryService
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         return toResponseDto(category);
     }
+
+    public CategoryResponseDto create(CategoryRequestDto dto) {
+        Category category = Category.builder()
+                .name(dto.getName())
+                .slug(dto.getSlug())
+                .description(dto.getDescription())
+                .active(dto.getActive())
+                .build();
+
+        return toResponseDto(categoryRepository.save(category));
+    }
+
+    public CategoryResponseDto update(UUID id, CategoryRequestDto dto) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        category.setName(dto.getName());
+        category.setSlug(dto.getSlug());
+        category.setDescription(dto.getDescription());
+        category.setActive(dto.getActive());
+
+        return toResponseDto(categoryRepository.save(category));
+    }
+
+    public void delete(UUID id) {
+        categoryRepository.deleteById(id);
+    }
+
+    private CategoryResponseDto toResponseDto(Category category) {
+        return CategoryResponseDto.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .slug(category.getSlug())
+                .description(category.getDescription())
+                .active(category.getActive())
+                .build();
+    }
 }
