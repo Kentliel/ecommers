@@ -59,7 +59,7 @@ public class BrandService
     * @param dto BrandRequestDto con los nuevos valores
     * @return BrandResponseDto con la marca actualizada
     * @throws RuntimeExecption si la marca no existe*/
-    public BrandResponseDto update(UUID id, BrandResponseDto dto)
+    public BrandResponseDto update(UUID id, BrandRequestDto dto)
     {
         Brand brand = brandRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Brand no found"));

@@ -8,6 +8,7 @@ import com.ecommers.models.Product;
 import com.ecommers.repositorys.BrandRepository;
 import com.ecommers.repositorys.CategoryRepository;
 import com.ecommers.repositorys.ProductRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -75,7 +76,7 @@ public class ProductService
 
         product.setSku(dto.getSku());
         product.setName(dto.getName());
-        //product.setSlug(product.getSlug());
+        product.setSlug(generateSlug(dto));
         product.setDescription(dto.getDescription());
         product.setPrice(dto.getPrice());
         product.setStock(dto.getStock());

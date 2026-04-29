@@ -34,13 +34,13 @@ public class CategoryController
         return categoryService.create(dto);
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     public CategoryResponseDto update(@PathVariable UUID id, @RequestBody CategoryRequestDto dto)
     {
         return categoryService.update(id, dto);
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public void delete(@PathVariable UUID id)
     {
         categoryService.delete(id);
