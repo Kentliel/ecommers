@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.UUID;
 
-/* Servicio que encapsula la logica de negocio para manejar categorias
+/* servicio que encapsula la lógica de negocio para manejar categorías
 * Usa un categoryRepository para acceder a la persistencia*/
 @Service
 @RequiredArgsConstructor
@@ -19,8 +19,8 @@ public class CategoryService
     // Repositorio para operaciones CRUD sobre Category (Inyectado por Spring)
     private final CategoryRepository categoryRepository;
 
-    /*Recupera todas las categorias y las transforma a DTOs de respuesta
-    * @return lista de CategoryResponseDto con todas las categorias*/
+    /*Recupera todas las categorías y las transforma a DTOs de respuesta
+    * @return lista de CategoryResponseDto con todas las categorías*/
     public List<CategoryResponseDto> findAll()
     {
         return categoryRepository.findAll()
