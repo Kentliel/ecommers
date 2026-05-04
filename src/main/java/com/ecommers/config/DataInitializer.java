@@ -60,10 +60,15 @@ public class DataInitializer implements CommandLineRunner
 
         addressRepository.save(address);
 
+        // ============================
+        // CATEGORÍAS (RAÍZ + HIJOS)
+        // ============================
+
+        // Categorías raíz
         Category electronics = Category.builder()
-                .name("ELectronica")
+                .name("Electrónica")
                 .slug("electronica")
-                .description("Productos electronicos, tecnologia y accesorios.")
+                .description("Productos electrónicos, tecnología y accesorios.")
                 .active(true)
                 .build();
 
@@ -77,6 +82,49 @@ public class DataInitializer implements CommandLineRunner
         categoryRepository.save(electronics);
         categoryRepository.save(fashion);
 
+        // Subcategorías de Electrónica
+        Category smartphones = Category.builder()
+                .name("Smartphones")
+                .slug("smartphones")
+                .description("Teléfonos móviles y smartphones.")
+                .active(true)
+                .parent(electronics)
+                .build();
+
+        Category laptops = Category.builder()
+                .name("Portátiles")
+                .slug("portatiles")
+                .description("Ordenadores portátiles y ultrabooks.")
+                .active(true)
+                .parent(electronics)
+                .build();
+
+        categoryRepository.save(smartphones);
+        categoryRepository.save(laptops);
+
+        // Subcategorías de Moda
+        Category shoesCategory = Category.builder()
+                .name("Zapatillas")
+                .slug("zapatillas")
+                .description("Calzado deportivo y casual.")
+                .active(true)
+                .parent(fashion)
+                .build();
+
+        Category clothing = Category.builder()
+                .name("Ropa")
+                .slug("ropa")
+                .description("Ropa para hombre y mujer.")
+                .active(true)
+                .parent(fashion)
+                .build();
+
+        categoryRepository.save(shoesCategory);
+        categoryRepository.save(clothing);
+
+        // ============================
+        // MARCAS
+        // ============================
         Brand apple = Brand.builder()
                 .name("Apple")
                 .nif("A12345678")
@@ -96,6 +144,9 @@ public class DataInitializer implements CommandLineRunner
         brandRepository.save(apple);
         brandRepository.save(nike);
 
+        // ============================
+        // PRODUCTOS
+        // ============================
         Product iphone = Product.builder()
                 .sku("ELEC-IPHONE-001")
                 .name("iPhone 15")
@@ -105,7 +156,7 @@ public class DataInitializer implements CommandLineRunner
                 .stock(25)
                 .imageUrl("https://example.com/images/iphone-15.jpg")
                 .active(true)
-                .category(electronics)
+                .category(smartphones)
                 .brand(apple)
                 .build();
 
@@ -118,7 +169,7 @@ public class DataInitializer implements CommandLineRunner
                 .stock(40)
                 .imageUrl("https://example.com/images/nike-air-max.jpg")
                 .active(true)
-                .category(fashion)
+                .category(shoesCategory)
                 .brand(nike)
                 .build();
 

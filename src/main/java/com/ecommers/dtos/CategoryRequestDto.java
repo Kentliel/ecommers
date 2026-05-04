@@ -2,6 +2,8 @@ package com.ecommers.dtos;
 
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -14,4 +16,6 @@ public class CategoryRequestDto
     private String slug;
     private String description;
     private Boolean active;
+
+    private UUID parentId;
 }

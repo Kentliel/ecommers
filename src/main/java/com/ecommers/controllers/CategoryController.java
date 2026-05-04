@@ -46,4 +46,10 @@ public class CategoryController
         categoryService.delete(id);
     }
 
+    @GetMapping("/tree")
+    public List<CategoryResponseDto> findRootCategories()
+    {
+        return categoryService.findRootCategories();
+    }
+
 }

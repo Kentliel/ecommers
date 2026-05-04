@@ -2,6 +2,7 @@ package com.ecommers.dtos;
 
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -17,4 +18,9 @@ public class CategoryResponseDto
     private String slug;
     private String description;
     private Boolean active;
+
+    private UUID parentId;
+    private String parentName;
+
+    private List<CategoryResponseDto> children;
 }

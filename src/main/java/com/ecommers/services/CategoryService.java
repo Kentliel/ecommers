@@ -19,75 +19,188 @@ public class CategoryService
     // Repositorio para operaciones CRUD sobre Category (Inyectado por Spring)
     private final CategoryRepository categoryRepository;
 
-    /*Recupera todas las categorías y las transforma a DTOs de respuesta
-    * @return lista de CategoryResponseDto con todas las categorías*/
+    /**
+     * Obtiene todas las categorías sin cargar sus hijos.
+     * Se usa para listados simples donde no se necesita el árbol completo.
+     *
+     * @return lista de CategoryResponseDto sin información de children
+     */
     public List<CategoryResponseDto> findAll()
     {
         return categoryRepository.findAll()
                 .stream()
-                .map(this::toResponseDto)// convierte cada Category a CategoryResponseDto
+                .map(this::toResponseDtoWithoutChildren)// convierte cada Category a CategoryResponseDto
                 .toList();
     }
 
-    /*Busca una categoria por su id
-    * @param id UUID de la categoria a buscar
-    * @return CategoryResponseDto con los datos de la categoria encontrada
-    * @throws RuntimeException si no existe la categoria*/
-    public CategoryResponseDto findById(UUID id)
+    /**
+     * Obtiene únicamente las categorías raíz (parent == null)
+     * y construye el árbol completo de subcategorías.
+     *
+     * @return lista de categorías raíz con todos sus hijos anidados
+     */
+    public List<CategoryResponseDto> findRootCategories()
     {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
-        return toResponseDto(category);
+        return categoryRepository.findByParentIsNull()
+                .stream()
+                .map(this::toResponseDtoWithChildren)
+                .toList();
     }
 
-    /*Crea una nueva categoria a partir de un DTO de petición
-    * @param dto CategoryRequestDto con los datos para crear la categoria
-    * @return CategoryResponseDto con la categoria creada (incluye id generado)*/
+    /**
+     * Busca una categoría por su ID y devuelve su estructura completa.
+     *
+     * @param id UUID de la categoría
+     * @return CategoryResponseDto con hijos incluidos
+     * @throws RuntimeException si la categoría no existe
+     */
+    public CategoryResponseDto findById(UUID id)
+    {
+        Category category = findCategoryEntityById(id);
+        return toResponseDtoWithChildren(category);
+    }
+
+    /**
+     * Crea una nueva categoría validando:
+     * - Si tiene parentId, el padre debe existir.
+     * - No puede existir otra categoría con el mismo slug bajo el mismo padre.
+     * - Si es categoría raíz, no puede existir otra raíz con el mismo slug.
+     *
+     * @param dto datos de creación
+     * @return categoría creada convertida a DTO con hijos
+     */
     public CategoryResponseDto create(CategoryRequestDto dto) {
+        Category parent = null;
+
+        if (dto.getParentId() != null)
+        {
+            parent = findCategoryEntityById(dto.getParentId());
+
+            // Validación: slug único dentro del mismo padre
+            if (categoryRepository.existsByParentIdAndSlug(dto.getParentId(), dto.getSlug()))
+            {
+                throw new RuntimeException("Ya existe una subCategoria con ese slug dentro de esta categoria");
+            }
+            else
+            {
+                // Validación: slug único entre categorías raíz
+                if (categoryRepository.existsByParentIsNullAndSlug(dto.getSlug()))
+                {
+                    throw new RuntimeException("Ya existe una categoria raiz con ese slug");
+                }
+            }
+        }
         Category category = Category.builder()
                 .name(dto.getName())
                 .slug(dto.getSlug())
                 .description(dto.getDescription())
                 .active(dto.getActive())
+                .parent(parent)
                 .build();
 
-        return toResponseDto(categoryRepository.save(category));
+        return toResponseDtoWithChildren(categoryRepository.save(category));
     }
 
-    /*Actualiza una categoria existente con los datos del DTO
-    * @param id UUID de la categoria a actualizar
-    * @param dto CategoryRequestDto con los nuevos valores
-    * @return CategoryResponseDto con la categoria actualizada
-    * @throws RuntimeException si la categoria no existe*/
+    /**
+     * Actualiza una categoría existente validando:
+     * - La categoría debe existir.
+     * - No puede asignarse como padre a sí misma.
+     * - Si se asigna un nuevo padre, este debe existir.
+     *
+     * @param id ID de la categoría a actualizar
+     * @param dto datos nuevos
+     * @return categoría actualizada convertida a DTO con hijos
+     */
     public CategoryResponseDto update(UUID id, CategoryRequestDto dto) {
-        Category category = categoryRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Category not found"));
+        Category category = findCategoryEntityById(id);
+
+        Category parent = null;
+
+        if (dto.getParentId() != null)
+        {
+            if (dto.getParentId().equals(id))
+            {
+                throw new RuntimeException("Una categoria no puede ser padre de si misma");
+            }
+
+            parent = findCategoryEntityById(dto.getParentId());
+        }
 
         category.setName(dto.getName());
         category.setSlug(dto.getSlug());
         category.setDescription(dto.getDescription());
         category.setActive(dto.getActive());
+        category.setParent(parent);
 
-        return toResponseDto(categoryRepository.save(category));
+        return toResponseDtoWithChildren(categoryRepository.save(category));
     }
 
-    /*Elimina una categoria por su id
-    * @param id UUID de la categoria a eliminar*/
-    public void delete(UUID id) {
-        categoryRepository.deleteById(id);
+    /**
+     * Elimina una categoría por su ID.
+     * Si no existe, lanza excepción.
+     *
+     * @param id UUID de la categoría a eliminar
+     */
+    public void delete(UUID id)
+    {
+        Category category = findCategoryEntityById(id);
+        categoryRepository.delete(category);
     }
 
-    /* Método auxiliar privado que transforma una entidad Category a CategoryResponseDto
-    * Centraliza la conversion para evitar duplicación de código
-    * @param category entidad a convertir
-    * @return DTO de respuesta con los campos relevantes*/
-    private CategoryResponseDto toResponseDto(Category category) {
+    /**
+     * Recupera una entidad Category por ID o lanza excepción.
+     *
+     * @param id UUID de la categoría
+     * @return entidad Category existente
+     */
+    private Category findCategoryEntityById(UUID id)
+    {
+        return categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+    }
+
+    /**
+     * Convierte una categoría a DTO sin cargar hijos.
+     * Útil para listados planos.
+     *
+     * @param category entidad Category
+     * @return DTO sin children
+     */
+    private CategoryResponseDto toResponseDtoWithoutChildren(Category category) {
         return CategoryResponseDto.builder()
                 .id(category.getId())
                 .name(category.getName())
                 .slug(category.getSlug())
                 .description(category.getDescription())
                 .active(category.getActive())
+                .parentId(category.getParent() != null ? category.getParent().getId() : null)
+                .parentName(category.getParent() != null ? category.getParent().getName() : null)
+                .children(List.of())
+                .build();
+    }
+
+    /**
+     * Convierte una categoría a DTO incluyendo recursivamente todos sus hijos.
+     * Construye un árbol completo de categorías.
+     *
+     * @param category entidad Category
+     * @return DTO con children anidados
+     */
+    private CategoryResponseDto toResponseDtoWithChildren(Category category) {
+        return CategoryResponseDto.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .slug(category.getSlug())
+                .description(category.getDescription())
+                .active(category.getActive())
+                .parentId(category.getParent() != null ? category.getParent().getId() : null)
+                .parentName(category.getParent() != null ? category.getParent().getName() : null)
+                .children(
+                        category.getChildren()
+                                .stream()
+                                .map(this::toResponseDtoWithChildren)
+                                .toList()
+                )
                 .build();
     }
 }

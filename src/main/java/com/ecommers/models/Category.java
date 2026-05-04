@@ -4,10 +4,12 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(name = "categories")
+@Table(name = "categories", uniqueConstraints = @UniqueConstraint(columnNames = {"parent_id", "slug"}))
 @Getter
 @Setter
 @NoArgsConstructor
@@ -28,13 +30,27 @@ public class Category
     @Column(length = 500)
     private String description;
 
+    @Builder.Default
     @Column(nullable = false)
-    private Boolean active;
+    private Boolean active = true;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
     private LocalDateTime updateAt;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Category parent;
+
+    @OneToMany(
+            mappedBy = "parent",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+
+    @Builder.Default
+    private Set<Category> children = new HashSet<>();
 
     @PrePersist
     public void prePersist()
@@ -49,6 +65,18 @@ public class Category
     public void preUpdate()
     {
         this.updateAt = LocalDateTime.now();
+    }
+
+    public void addChild(Category child)
+    {
+        children.add(child);
+        child.setParent(this);
+    }
+
+    public void  removeChild(Category child)
+    {
+        children.remove(child);
+        child.setParent(null);
     }
 
 }
